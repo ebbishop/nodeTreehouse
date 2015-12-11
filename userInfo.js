@@ -1,5 +1,12 @@
 var profile = require('./profile.js');
+var input = require('./input.js');
 
-var users = process.argv.slice(2);
+var pointsIn = input.capFirst(process.argv[2]);
+var users = process.argv.slice(3);
 
-users.forEach(profile.get);
+
+users.forEach(function(userName,index,array){
+	profile.get(pointsIn, userName);
+});
+
+

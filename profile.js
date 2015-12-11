@@ -4,8 +4,13 @@ var https = require('https');
 var http = require('http');
 
 //Print message about user
-function printMessage(username, badgeCount, points){
-  var message = username + ' has ' + + badgeCount + ' total badge(s) and ' + points + ' points in Javascript';
+function printMessage(username, badgeCount, points, topic){
+  var message;
+  if(topic){
+    message = username + ' has ' + + badgeCount + ' total badge(s) and ' + points + ' points in ' + topic;
+  }else{
+    message = username + ' has ' + + badgeCount + ' total badge(s) and ' + points + ' total points';
+  }
   console.log(message);
 }
 
@@ -16,7 +21,7 @@ function printError(error){
 }
 
 //Connect to API URL
-function getProfile(username){
+function getProfile(topic,username){
   var myHttp = 'https://teamtreehouse.com/' + username + '.json';
   var request = https.get(myHttp, function(response){
     var body = '';
@@ -31,7 +36,16 @@ function getProfile(username){
         //Parse data
         try{
           var profile = JSON.parse(body);
-          printMessage(username, profile.badges.length, profile.points.JavaScript);
+          // console.log(profile);
+
+          //check that the topic exists
+          if(profile.points[topic]){
+            printMessage(profile.name, profile.badges.length, profile.points[topic], topic);
+          }else{
+            // only print error on the first username passed
+            once(printError({message: 'There was an error finding the topic ' + topic}));
+            printMessage(profile.name, profile.badges.length, profile.points.total);
+          }
         }catch(error){
           //Parse error
           printError(error);
@@ -46,5 +60,18 @@ function getProfile(username){
   //Connection error
   request.on('error', printError);
 }
+
+var once = function(func){
+  var counter = 0;
+  var newFunc = function(){
+    if(counter<1){
+      func();
+    }
+      counter ++;
+  }
+  return newFunc;
+}
+
+
 
 module.exports.get = getProfile;
